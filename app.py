@@ -42,6 +42,22 @@ def build_faiss_index(embeddings):
     index.add(embeddings_array)
     return index
 
+# ---- FUNCTION 5: SEARCH FAISS ----
+def search_chunks(question, chunks, index):
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    question_embedding = model.encode([question])
+    question_array = np.array(question_embedding).astype('float32')
+    distances, indices = index.search(question_array, k=2)
+    results = []
+    for i, idx in enumerate(indices[0]):
+        results.append({
+            "chunk": chunks[idx],
+            "distance": distances[0][i]
+        })
+    return results
+
+
+
 
 # ---- PDF UPLOAD ----
 uploaded_file = st.file_uploader("Upload your PDF", type="pdf")
@@ -62,3 +78,15 @@ if uploaded_file is not None:
     # Step 4: Build FAISS index
     index = build_faiss_index(embeddings)
     st.info(f"🗄️ Stored {index.ntotal} chunks in FAISS database.")
+
+     # Step 5: Search box
+    st.subheader("🔍 Search Your PDF:")
+    question = st.text_input("Ask a question about your PDF:")
+
+    if question:
+        results = search_chunks(question, chunks, index)
+        st.subheader("📌 Most Relevant Chunks Found:")
+        for i, result in enumerate(results):
+            st.write(f"**Result {i+1} — Distance: {result['distance']:.4f}**")
+            st.write(result['chunk'])
+            st.divider()
