@@ -90,3 +90,5 @@ if uploaded_file is not None:
             st.write(f"**Result {i+1} — Distance: {result['distance']:.4f}**")
             st.write(result['chunk'])
             st.divider()
+
+# Day 4 - maintaining streak
