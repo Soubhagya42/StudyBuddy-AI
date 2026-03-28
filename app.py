@@ -56,6 +56,14 @@ def search_chunks(question, chunks, index):
         })
     return results
 
+# ---- FUNCTION 6: GET LLM ANSWER ----
+def get_answer(question, relevant_chunks):
+    from transformers import pipeline
+    context = " ".join([chunk["chunk"] for chunk in relevant_chunks])
+    qa_pipeline = pipeline("text-generation",model="google/flan-t5-small")
+    prompt = f"Answer this question: {question} Based on this context: {context}"
+    answer = qa_pipeline(prompt, max_new_tokens=200)
+    return answer[0]["generated_text"]
 
 
 
@@ -91,4 +99,14 @@ if uploaded_file is not None:
             st.write(result['chunk'])
             st.divider()
 
-# Day 4 - maintaining streak
+    # Step 6: Get LLM answer
+    if question:
+        results = search_chunks(question, chunks, index)
+        answer = get_answer(question, results)
+        st.subheader("🤖 AI Answer:")
+        st.write(answer)
+        st.subheader("📌 Source Chunks:")
+        for i, result in enumerate(results):
+            st.write(f"**Chunk {i+1} — Distance: {result['distance']:.4f}**")
+            st.write(result['chunk'])
+            st.divider()
